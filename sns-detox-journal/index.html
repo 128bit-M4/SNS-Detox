@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>しずく日記 — SNSと距離をおくための記録帳</title>
+<meta name="description" content="SNS依存から距離をおくためのローカル完結型ジャーナルアプリ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="desk">
+
+  <header class="masthead">
+    <div class="masthead-inner">
+      <h1 class="wordmark">しずく<span class="wordmark-sub">日記</span></h1>
+      <p class="tagline">通知の外側で、今日をひとこと書きとめる</p>
+    </div>
+    <div class="today-pill" id="todayPill">
+      <span class="today-pill-label">今日</span>
+      <span class="today-pill-date" id="todayDate">—</span>
+    </div>
+  </header>
+
+  <div class="notebook">
+
+    <nav class="tabs" aria-label="ページ切り替え">
+      <button class="tab is-active" data-tab="today" type="button"><span>今日</span></button>
+      <button class="tab" data-tab="history" type="button"><span>記録</span></button>
+      <button class="tab" data-tab="stats" type="button"><span>統計</span></button>
+      <button class="tab" data-tab="settings" type="button"><span>設定</span></button>
+    </nav>
+
+    <main class="page-stack">
+
+      <!-- ===== 今日ページ ===== -->
+      <section class="page is-active" id="page-today" data-page="today">
+        <div class="page-edge" aria-hidden="true"></div>
+        <div class="page-content">
+
+          <div class="field-block">
+            <h2 class="field-title">いまの気分は？</h2>
+            <p class="field-hint">針をクリックして、今の内側の天気を記録します。</p>
+            <div class="dial-wrap">
+              <svg class="dial" viewBox="0 0 240 140" id="moodDial">
+                <path d="M 20 130 A 100 100 0 0 1 220 130" class="dial-track" />
+                <g id="dialTicks"></g>
+                <line id="dialNeedle" x1="120" y1="130" x2="120" y2="40" class="dial-needle" />
+                <circle cx="120" cy="130" r="7" class="dial-hub" />
+              </svg>
+              <div class="dial-labels">
+                <span>あらし</span>
+                <span>くもり</span>
+                <span>おだやか</span>
+                <span>はれ</span>
+                <span>快晴</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <h2 class="field-title">SNSを開きたい衝動はあった？</h2>
+            <div class="urge-toggle" id="urgeToggle">
+              <button type="button" class="urge-btn" data-urge="no">なかった</button>
+              <button type="button" class="urge-btn" data-urge="yes">あった</button>
+            </div>
+
+            <div class="urge-detail" id="urgeDetail" hidden>
+              <p class="field-hint">きっかけは？（複数選べます）</p>
+              <div class="chip-row" id="triggerChips">
+                <button type="button" class="chip" data-trigger="退屈">退屈</button>
+                <button type="button" class="chip" data-trigger="不安">不安</button>
+                <button type="button" class="chip" data-trigger="通知">通知が見えた</button>
+                <button type="button" class="chip" data-trigger="習慣">なんとなく手が</button>
+                <button type="button" class="chip" data-trigger="孤独">ひとりを感じた</button>
+                <button type="button" class="chip" data-trigger="その他">その他</button>
+              </div>
+              <label class="text-label" for="urgeResponse">そのとき、代わりに何をした？</label>
+              <input type="text" id="urgeResponse" class="text-input" placeholder="例：水を一杯飲んだ、外を5分歩いた">
+            </div>
+          </div>
+
+          <div class="field-block">
+            <h2 class="field-title">今日のひとつの感謝</h2>
+            <input type="text" id="gratitude" class="text-input" placeholder="小さなことでいい。今日よかったこと">
+          </div>
+
+          <div class="field-block">
+            <h2 class="field-title">自由に書く</h2>
+            <textarea id="freeWrite" class="textarea" rows="6" placeholder="頭の中にあることを、そのまま書き出してみる…"></textarea>
+          </div>
+
+          <div class="save-row">
+            <span class="save-status" id="saveStatus"></span>
+            <button type="button" class="btn-primary" id="saveBtn">今日のページを保存</button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== 記録ページ ===== -->
+      <section class="page" id="page-history" data-page="history">
+        <div class="page-edge" aria-hidden="true"></div>
+        <div class="page-content">
+          <h2 class="field-title">これまでの記録</h2>
+          <p class="field-hint">書いた日から順に並びます。クリックで開閉。</p>
+          <div class="history-list" id="historyList">
+            <p class="empty-note">まだ記録がありません。「今日」のページから書き始めてみましょう。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 統計ページ ===== -->
+      <section class="page" id="page-stats" data-page="stats">
+        <div class="page-edge" aria-hidden="true"></div>
+        <div class="page-content">
+          <h2 class="field-title">続けてきた記録</h2>
+
+          <div class="stat-row">
+            <div class="stat-card">
+              <span class="stat-number" id="statStreak">0</span>
+              <span class="stat-label">連続で書いた日数</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number" id="statTotal">0</span>
+              <span class="stat-label">合計ページ数</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number" id="statCalm">0%</span>
+              <span class="stat-label">衝動がなかった日の割合</span>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <h2 class="field-title">気分の推移（直近30日）</h2>
+            <svg class="mood-chart" id="moodChart" viewBox="0 0 600 180"></svg>
+          </div>
+
+          <div class="field-block">
+            <h2 class="field-title">衝動のきっかけ内訳</h2>
+            <div id="triggerBreakdown" class="trigger-breakdown">
+              <p class="empty-note">まだデータがありません。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 設定ページ ===== -->
+      <section class="page" id="page-settings" data-page="settings">
+        <div class="page-edge" aria-hidden="true"></div>
+        <div class="page-content">
+          <h2 class="field-title">データについて</h2>
+          <p class="field-hint">すべての記録はこのブラウザの中だけに保存され、外部には一切送信されません。</p>
+
+          <div class="settings-actions">
+            <button type="button" class="btn-secondary" id="exportBtn">記録を書き出す（JSON）</button>
+            <label class="btn-secondary file-btn">
+              記録を読み込む
+              <input type="file" id="importInput" accept="application/json" hidden>
+            </label>
+            <button type="button" class="btn-danger" id="clearBtn">すべての記録を消去</button>
+          </div>
+
+          <div class="field-block note-block">
+            <h2 class="field-title">このアプリについて</h2>
+            <p class="field-hint">
+              しずく日記は、SNSを開く代わりに手を動かす場所として作りました。
+              続けられない日があっても構いません。空白のページは、失敗ではなく、また戻ってこられる場所です。
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="desk-footer">
+    <p>すべてこの端末の中だけで完結します。サーバー通信は行いません。</p>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
